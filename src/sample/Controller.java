@@ -47,7 +47,7 @@ public class Controller {
     private String loadLocation = null;
     private String desktop = System.getProperty("user.home") + "\\Desktop\\";
 
-    private String ip;
+
     private File file = null;
     private File receivedFile = null;
 
@@ -157,7 +157,7 @@ public class Controller {
     public void receive() throws IOException {
         //TODO
         receivedFile = new File(desktop);
-        Task<Void> task = new ServerSocketBackground(receivedFile, desktop, progressBar);
+        Task<Void> task = new ServerSocketBackground(receivedFile, desktop, progressBar,infoLabel);
         Thread thread = new Thread(task);
         progressBar.progressProperty().bind(task.progressProperty());
         task.setOnRunning(e -> {
@@ -169,7 +169,7 @@ public class Controller {
             infoLabel.setVisible(false);
             receiveToggle.setSelected(false);
             receiveToggle.setDisable(false);
-            infoLabel.setText(" ");
+            infoLabel.setVisible(false);
 
         });
         if (task.getState() == Task.State.SUCCEEDED) {

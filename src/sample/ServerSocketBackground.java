@@ -2,6 +2,7 @@ package sample;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
 import java.io.*;
@@ -16,11 +17,13 @@ public class ServerSocketBackground extends Task<Void> {
     private String path;
     private  Socket socket;
     private ProgressBar progressBar;
+    private Label infoLabel;
 
-    public ServerSocketBackground(File receivedFile, String path, ProgressBar progressBar){
+    public ServerSocketBackground(File receivedFile, String path, ProgressBar progressBar, Label infoLabel){
         this.receivedFile = receivedFile;
         this.path = path;
         this.progressBar = progressBar;
+        this.infoLabel = infoLabel;
     }
 
 
@@ -46,6 +49,8 @@ public class ServerSocketBackground extends Task<Void> {
                 });
                 task.setOnSucceeded(e->{
                     progressBar.setVisible(false);
+                    infoLabel.setVisible(false);
+
                 });
                 Thread thread = new Thread(task);
                 thread.start();
