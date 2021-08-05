@@ -19,7 +19,7 @@ public class ServerSocketBackground extends Task<Void> {
     private ProgressBar progressBar;
     private Label infoLabel;
 
-    public ServerSocketBackground(File receivedFile, String path, ProgressBar progressBar, Label infoLabel){
+    public ServerSocketBackground(File receivedFile, String path, ProgressBar progressBar,Label infoLabel){
         this.receivedFile = receivedFile;
         this.path = path;
         this.progressBar = progressBar;
@@ -31,16 +31,17 @@ public class ServerSocketBackground extends Task<Void> {
     protected Void call() throws Exception {
         try (ServerSocket serverSocket = new ServerSocket(55555)){
 
-            System.out.println("Server started...");
+//            System.out.println("Server started...");
 
             while (true) {
-                System.out.println("Waiting to receive file");
+//                System.out.println("Waiting to receive file");
                  socket = serverSocket.accept();
                 Task<Void> task = new Receive(socket.getInputStream(),receivedFile,path,progressBar);
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
                         progressBar.progressProperty().bind(task.progressProperty());
+                        infoLabel.textProperty().bind(task.messageProperty());
                     }
                 });
 
@@ -49,8 +50,6 @@ public class ServerSocketBackground extends Task<Void> {
                 });
                 task.setOnSucceeded(e->{
                     progressBar.setVisible(false);
-                    infoLabel.setVisible(false);
-
                 });
                 Thread thread = new Thread(task);
                 thread.start();

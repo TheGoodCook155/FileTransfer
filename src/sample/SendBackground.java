@@ -37,16 +37,17 @@ public class SendBackground extends Task<Void> {
             BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file), 8192);
 
 
-            int c = -1;
+            int c;
             long workDone = 0;
             long fileSize = file.length();
-
+            byte[] buffer = new byte[8192];
 
             System.out.println("File size in SendBackground is " + fileSize);
-            while ((c = bufferedInputStream.read()) != -1) {
-                dataOutputStream.write(c);
+
+            while ((c = bufferedInputStream.read(buffer)) > 0) {
+                dataOutputStream.write(buffer,0,c);
                 dataOutputStream.flush();
-                workDone++;
+                workDone+= buffer.length;
                 updateProgress(workDone, fileSize);
             }
             System.out.println("Work done is " + workDone);

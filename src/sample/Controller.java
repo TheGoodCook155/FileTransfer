@@ -1,6 +1,7 @@
 package sample;
 
 import javafx.application.Platform;
+import javafx.beans.property.Property;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -41,21 +42,20 @@ public class Controller {
     @FXML
     private Label infoLabel;
 
+
     @FXML
     private TextField textField;
 
     private String loadLocation = null;
     private String desktop = System.getProperty("user.home") + "\\Desktop\\";
 
-
+    private String ip;
     private File file = null;
     private File receivedFile = null;
 
 
     public void initialize() {
         progressBar.setVisible(false);
-//        receiveToggle.setDisable(true);
-//        sendToggle.setSelected(true);
         textField.setVisible(false);
         pickFile.setDisable(true);
         infoLabel.setText("Select send or receive mod");
@@ -70,7 +70,10 @@ public class Controller {
     public String getIp() {
 
         String input = textField.getText();
-//        System.out.println("input is " + input);
+        if (input.isEmpty()){
+            infoLabel.setText("Enter IP address");
+            sendButton.setDisable(true);
+        }
 
         if (input.matches("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}")) {
             sendButton.setDisable(false);
@@ -86,8 +89,6 @@ public class Controller {
         return "";
 
     }
-
-
 
 
     public void toggleButtons() {
@@ -118,6 +119,8 @@ public class Controller {
             receiveToggle.setDisable(true);
             saveLocationLabel.setVisible(true);
             infoLabel.setText("Receive mod");
+
+
         } else if (!receiveToggle.isSelected()) {
             sendToggle.setDisable(false);
         }
@@ -141,15 +144,12 @@ public class Controller {
     }
 
     public void sendButtonDisable() {
-        if (textField.getText().isEmpty()) {
+        if (textField.getText().isEmpty() || file == null) {
             sendButton.setDisable(true);
-            infoLabel.setText("Enter IP address");
-        } else if (getIp().equals("")){
-            sendButton.setDisable(true);
-            infoLabel.setText("Enter valid IP address");
-        } else if (file == null){
-            sendButton.setDisable(true);
-            infoLabel.setText("Pick a file");
+            String text = file == null ? "Choose a file":"Enter IP address";
+            infoLabel.setText(text);
+        }else if (file != null){
+            sendButton.setDisable(false);
         }
     }
 
@@ -157,20 +157,21 @@ public class Controller {
     public void receive() throws IOException {
         //TODO
         receivedFile = new File(desktop);
-        Task<Void> task = new ServerSocketBackground(receivedFile, desktop, progressBar,infoLabel);
+        Task<Void> task = new ServerSocketBackground(receivedFile, desktop, progressBar, infoLabel);
         Thread thread = new Thread(task);
         progressBar.progressProperty().bind(task.progressProperty());
+        infoLabel.textProperty().bindBidirectional((Property<String>) task.messageProperty());
+
+
         task.setOnRunning(e -> {
             progressBar.setVisible(true);
-            infoLabel.setText("Receiving...");
+
+//            infoLabel.setText("Receiving...");
         });
         task.setOnSucceeded(e -> {
             progressBar.setVisible(false);
-            infoLabel.setVisible(false);
             receiveToggle.setSelected(false);
             receiveToggle.setDisable(false);
-            infoLabel.setVisible(false);
-
         });
         if (task.getState() == Task.State.SUCCEEDED) {
 
@@ -181,8 +182,8 @@ public class Controller {
 
     public void send() throws IOException {
         //TODO
+        infoLabel.setVisible(true);
         infoLabel.setText("Sending...");
-
         Task<Void> task = new SendBackground(file, getIp());
 //        System.out.println("Task run property " + task.getState());
         Thread thread = new Thread(task);

@@ -28,6 +28,7 @@ public class Receive extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
+
         try {
             BufferedInputStream buffInputStream = new BufferedInputStream(inputStream,8192);
             DataInputStream dataInputStream = new DataInputStream(buffInputStream);
@@ -38,16 +39,20 @@ public class Receive extends Task<Void> {
 
             FileOutputStream fileOutputStream = new FileOutputStream(String.valueOf(path));
 
-            System.out.println("FileSize in receive is " + fileSize);
-
-            int c = -1;
+//            System.out.println("FileSize in receive is " + fileSize);
+            byte[] buffer = new byte[8192];
+            updateMessage("Waiting to receive a file...");
+            int c;
             int count = 0;
-            while ((c = dataInputStream.read()) != -1) {
+            while ((c = dataInputStream.read(buffer)) > 0) {
                 updateProgress(count,fileSize);
-                fileOutputStream.write(c);
+                updateMessage("Receiving...");
+                fileOutputStream.write(buffer,0,c);
                 fileOutputStream.flush();
-                count++;
+                count+= buffer.length;
             }
+            updateMessage("Done...Waiting to receive another file");
+
 
             System.out.println("File upload succeeded!");
 
